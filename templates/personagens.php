@@ -1,0 +1,51 @@
+<?php
+/**
+ * Template para a página de personagens do GTA VI Ultimate
+ */
+
+// Se este arquivo é chamado diretamente, aborta.
+if (!defined('WPINC')) {
+    die;
+}
+
+// Incluir cabeçalho
+include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/header.php';
+
+// Obter personagens
+global $wpdb;
+$table_name = $wpdb->prefix . 'gta6_characters';
+$characters = $wpdb->get_results("SELECT * FROM $table_name ORDER BY display_order ASC, id ASC");
+?>
+
+<main class="gta6-main">
+    <section class="gta6-section">
+        <div class="gta6-section-header">
+            <h2><?php echo gta6_t('characters', 'Personagens'); ?></h2>
+        </div>
+        
+        <?php if (empty($characters)) : ?>
+            <p class="gta6-no-content"><?php echo gta6_t('no_characters_found', 'Nenhum personagem encontrado.'); ?></p>
+        <?php else : ?>
+            <div class="gta6-grid">
+                <?php foreach ($characters as $character) : ?>
+                    <div class="gta6-card">
+                        <div class="gta6-card-image">
+                            <img src="<?php echo esc_url($character->image_url); ?>" alt="<?php echo esc_attr($character->name); ?>">
+                        </div>
+                        <div class="gta6-card-content">
+                            <h3 class="gta6-card-title"><?php echo esc_html($character->name); ?></h3>
+                            <?php if (!empty($character->role)) : ?>
+                                <div class="gta6-card-role"><?php echo esc_html($character->role); ?></div>
+                            <?php endif; ?>
+                            <p class="gta6-card-text"><?php echo esc_html($character->description); ?></p>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </section>
+</main>
+
+<?php
+// Incluir rodapé
+include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/footer.php';
