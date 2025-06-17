@@ -8,10 +8,6 @@ if (!defined('WPINC')) {
     die;
 }
 
-// Iniciar sessão para suporte a idiomas
-if (!session_id()) {
-    session_start();
-}
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>

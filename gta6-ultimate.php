@@ -22,7 +22,7 @@ define('GTA6_ULTIMATE_VERSION', '1.3.3');
 define('GTA6_ULTIMATE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GTA6_ULTIMATE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('GTA6_ULTIMATE_PLUGIN_BASENAME', plugin_basename(__FILE__));
-define('GTA6_ULTIMATE_ASSET_VERSION', GTA6_ULTIMATE_VERSION . '.' . time()); // Versão dinâmica para evitar cache
+define('GTA6_ULTIMATE_ASSET_VERSION', GTA6_ULTIMATE_VERSION);
 
 /**
  * Classe principal do plugin
@@ -77,12 +77,6 @@ class GTA6_Ultimate {
         // Adicionar headers para controle de cache
         add_action('send_headers', array($this, 'add_cache_headers'));
         
-        // Limpar cache ao salvar conteúdo
-        add_action('wp_ajax_gta6_save_news', array($this, 'clear_plugin_cache'));
-        add_action('wp_ajax_gta6_save_video', array($this, 'clear_plugin_cache'));
-        add_action('wp_ajax_gta6_save_image', array($this, 'clear_plugin_cache'));
-        add_action('wp_ajax_gta6_save_background', array($this, 'clear_plugin_cache'));
-        add_action('wp_ajax_gta6_save_character', array($this, 'clear_plugin_cache'));
     }
     
     /**

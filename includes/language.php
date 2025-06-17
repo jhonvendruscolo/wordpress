@@ -59,9 +59,6 @@ function gta6_ajax_change_language() {
         wp_send_json_error('Idioma inválido');
     }
     
-    // Salvar idioma na sessão
-    $_SESSION['gta6_language'] = $language;
-    
     // Salvar idioma em cookie (30 dias)
     setcookie('gta6_language', $language, time() + (30 * DAY_IN_SECONDS), '/');
     
@@ -74,11 +71,6 @@ function gta6_ajax_change_language() {
  * Obter idioma atual
  */
 function gta6_get_current_language() {
-    // Verificar se há um idioma na sessão
-    if (isset($_SESSION['gta6_language'])) {
-        return $_SESSION['gta6_language'];
-    }
-    
     // Verificar se há um idioma no cookie
     if (isset($_COOKIE['gta6_language'])) {
         return $_COOKIE['gta6_language'];
