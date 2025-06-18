@@ -17,9 +17,17 @@ function gta6_init_ajax() {
     add_action('wp_ajax_gta6_subscribe_newsletter', 'gta6_ajax_subscribe_newsletter');
     add_action('wp_ajax_nopriv_gta6_subscribe_newsletter', 'gta6_ajax_subscribe_newsletter');
     
-    // Adicionar handler para exclusão de itens
-    add_action('wp_ajax_gta6_delete_item', 'gta6_ajax_delete_item');
-    
+    // Adicionar handlers para salvar conteúdo
+    add_action('wp_ajax_gta6_save_news', 'gta6_ajax_save_news');
+    add_action('wp_ajax_gta6_save_video', 'gta6_ajax_save_video');
+    add_action('wp_ajax_gta6_save_image', 'gta6_ajax_save_image');
+    add_action('wp_ajax_gta6_save_background', 'gta6_ajax_save_background');
+    add_action('wp_ajax_gta6_save_character', 'gta6_ajax_save_character');
+
+    // Endpoints públicos
+    add_action('wp_ajax_gta6_get_news', 'gta6_ajax_get_news');
+    add_action('wp_ajax_nopriv_gta6_get_news', 'gta6_ajax_get_news');
+
     // Adicionar handler para exportar inscritos
     add_action('wp_ajax_gta6_export_subscribers', 'gta6_ajax_export_subscribers');
     
@@ -79,67 +87,6 @@ function gta6_ajax_subscribe_newsletter() {
             'message' => __('Ocorreu um erro ao cadastrar seu e-mail. Por favor, tente novamente.', 'gta6-ultimate')
         ));
     }
-}
-
-/**
- * Handler AJAX para exclusão de itens
- */
-function gta6_ajax_delete_item() {
-    // Verificar nonce
-    check_ajax_referer('gta6-ultimate-admin-nonce', 'nonce');
-    
-    // Verificar permissões
-    if (!current_user_can('manage_options')) {
-        wp_send_json_error(__('Você não tem permissão para realizar esta ação.', 'gta6-ultimate'));
-    }
-    
-    // Obter dados
-    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-    $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
-    
-    // Validar dados
-    if (empty($id) || empty($type)) {
-        wp_send_json_error(__('Dados inválidos.', 'gta6-ultimate'));
-    }
-    
-    global $wpdb;
-    
-    // Determinar tabela com base no tipo
-    $table_map = array(
-        'news' => $wpdb->prefix . 'gta6_news',
-        'videos' => $wpdb->prefix . 'gta6_videos',
-        'images' => $wpdb->prefix . 'gta6_images',
-        'backgrounds' => $wpdb->prefix . 'gta6_backgrounds',
-        'characters' => $wpdb->prefix . 'gta6_characters',
-        'newsletter' => $wpdb->prefix . 'gta6_newsletter'
-    );
-    
-    if (!isset($table_map[$type])) {
-        wp_send_json_error(__('Tipo de item inválido.', 'gta6-ultimate'));
-    }
-    
-    $table_name = $table_map[$type];
-    
-    // Verificar se o item existe
-    $item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id));
-    if (!$item) {
-        wp_send_json_error(__('Item não encontrado.', 'gta6-ultimate'));
-    }
-    
-    // Excluir item
-    $result = $wpdb->delete(
-        $table_name,
-        array('id' => $id),
-        array('%d')
-    );
-    
-    if ($result === false) {
-        wp_send_json_error(__('Erro ao excluir o item.', 'gta6-ultimate'));
-    }
-    
-    wp_send_json_success(array(
-        'message' => __('Item excluído com sucesso.', 'gta6-ultimate')
-    ));
 }
 
 /**
@@ -221,6 +168,260 @@ function gta6_ajax_activate_background() {
     
     wp_send_json_success(array(
         'message' => __('Plano de fundo ativado com sucesso.', 'gta6-ultimate')
+    ));
+}
+
+/**
+ * Salvar notícia via AJAX
+ */
+function gta6_ajax_save_news() {
+    check_ajax_referer('gta6-ultimate-nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(__('Você não tem permissão para realizar esta ação.', 'gta6-ultimate'));
+    }
+
+    $id        = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $title     = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $content   = isset($_POST['content']) ? wp_kses_post($_POST['content']) : '';
+    $category  = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : 'Geral';
+    $image_url = isset($_POST['image_url']) ? esc_url_raw($_POST['image_url']) : '';
+
+    if (empty($title) || empty($content)) {
+        wp_send_json_error(__('Título e conteúdo são obrigatórios.', 'gta6-ultimate'));
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'gta6_news';
+
+    $data = array(
+        'title'     => $title,
+        'content'   => $content,
+        'category'  => $category,
+        'image_url' => $image_url,
+    );
+
+    $format = array('%s', '%s', '%s', '%s');
+
+    if ($id > 0) {
+        $wpdb->update($table, $data, array('id' => $id), $format, array('%d'));
+    } else {
+        $data['date'] = current_time('mysql');
+        $format[] = '%s';
+        $wpdb->insert($table, $data, $format);
+    }
+
+    GTA6_Ultimate::get_instance()->clear_plugin_cache();
+
+    wp_send_json_success(array('message' => __('Notícia salva com sucesso.', 'gta6-ultimate')));
+}
+
+/**
+ * Salvar vídeo via AJAX
+ */
+function gta6_ajax_save_video() {
+    check_ajax_referer('gta6-ultimate-nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(__('Você não tem permissão para realizar esta ação.', 'gta6-ultimate'));
+    }
+
+    $id           = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $title        = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $description  = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+    $video_type   = isset($_POST['video_type']) ? sanitize_text_field($_POST['video_type']) : 'youtube';
+    $video_url    = isset($_POST['video_url']) ? esc_url_raw($_POST['video_url']) : '';
+    $thumbnail_url= isset($_POST['thumbnail_url']) ? esc_url_raw($_POST['thumbnail_url']) : '';
+
+    if (empty($title) || empty($video_url)) {
+        wp_send_json_error(__('Título e URL do vídeo são obrigatórios.', 'gta6-ultimate'));
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'gta6_videos';
+
+    $data = array(
+        'title'        => $title,
+        'description'   => $description,
+        'video_type'    => $video_type,
+        'video_url'     => $video_url,
+        'thumbnail_url' => $thumbnail_url,
+    );
+
+    $format = array('%s', '%s', '%s', '%s', '%s');
+
+    if ($id > 0) {
+        $wpdb->update($table, $data, array('id' => $id), $format, array('%d'));
+    } else {
+        $data['date'] = current_time('mysql');
+        $format[] = '%s';
+        $wpdb->insert($table, $data, $format);
+    }
+
+    GTA6_Ultimate::get_instance()->clear_plugin_cache();
+
+    wp_send_json_success(array('message' => __('Vídeo salvo com sucesso.', 'gta6-ultimate')));
+}
+
+/**
+ * Salvar imagem via AJAX
+ */
+function gta6_ajax_save_image() {
+    check_ajax_referer('gta6-ultimate-nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(__('Você não tem permissão para realizar esta ação.', 'gta6-ultimate'));
+    }
+
+    $id        = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $title     = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $description= isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+    $category  = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : 'Geral';
+    $image_url = isset($_POST['image_url']) ? esc_url_raw($_POST['image_url']) : '';
+
+    if (empty($title) || empty($image_url)) {
+        wp_send_json_error(__('Título e imagem são obrigatórios.', 'gta6-ultimate'));
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'gta6_images';
+
+    $data = array(
+        'title'       => $title,
+        'description' => $description,
+        'category'    => $category,
+        'image_url'   => $image_url,
+    );
+
+    $format = array('%s', '%s', '%s', '%s');
+
+    if ($id > 0) {
+        $wpdb->update($table, $data, array('id' => $id), $format, array('%d'));
+    } else {
+        $data['date'] = current_time('mysql');
+        $format[] = '%s';
+        $wpdb->insert($table, $data, $format);
+    }
+
+    GTA6_Ultimate::get_instance()->clear_plugin_cache();
+
+    wp_send_json_success(array('message' => __('Imagem salva com sucesso.', 'gta6-ultimate')));
+}
+
+/**
+ * Salvar plano de fundo via AJAX
+ */
+function gta6_ajax_save_background() {
+    check_ajax_referer('gta6-ultimate-nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(__('Você não tem permissão para realizar esta ação.', 'gta6-ultimate'));
+    }
+
+    $id        = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $title     = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+    $image_url = isset($_POST['image_url']) ? esc_url_raw($_POST['image_url']) : '';
+
+    if (empty($title) || empty($image_url)) {
+        wp_send_json_error(__('Título e imagem são obrigatórios.', 'gta6-ultimate'));
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'gta6_backgrounds';
+
+    $data = array(
+        'title'     => $title,
+        'image_url' => $image_url,
+    );
+
+    $format = array('%s', '%s');
+
+    if ($id > 0) {
+        $wpdb->update($table, $data, array('id' => $id), $format, array('%d'));
+    } else {
+        $data['date'] = current_time('mysql');
+        $format[] = '%s';
+        $wpdb->insert($table, $data, $format);
+    }
+
+    GTA6_Ultimate::get_instance()->clear_plugin_cache();
+
+    wp_send_json_success(array('message' => __('Plano de fundo salvo com sucesso.', 'gta6-ultimate')));
+}
+
+/**
+ * Salvar personagem via AJAX
+ */
+function gta6_ajax_save_character() {
+    check_ajax_referer('gta6-ultimate-nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(__('Você não tem permissão para realizar esta ação.', 'gta6-ultimate'));
+    }
+
+    $id           = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $name         = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+    $description  = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+    $image_url    = isset($_POST['image_url']) ? esc_url_raw($_POST['image_url']) : '';
+    $role         = isset($_POST['role']) ? sanitize_text_field($_POST['role']) : '';
+    $display_order= isset($_POST['display_order']) ? intval($_POST['display_order']) : 0;
+
+    if (empty($name) || empty($description) || empty($image_url)) {
+        wp_send_json_error(__('Nome, descrição e imagem são obrigatórios.', 'gta6-ultimate'));
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'gta6_characters';
+
+    $data = array(
+        'name'          => $name,
+        'description'   => $description,
+        'image_url'     => $image_url,
+        'role'          => $role,
+        'display_order' => $display_order,
+    );
+
+    $format = array('%s', '%s', '%s', '%s', '%d');
+
+    if ($id > 0) {
+        $wpdb->update($table, $data, array('id' => $id), $format, array('%d'));
+    } else {
+        $data['date'] = current_time('mysql');
+        $format[] = '%s';
+        $wpdb->insert($table, $data, $format);
+    }
+
+    GTA6_Ultimate::get_instance()->clear_plugin_cache();
+
+    wp_send_json_success(array('message' => __('Personagem salvo com sucesso.', 'gta6-ultimate')));
+}
+
+/**
+ * Obter notícia via AJAX
+ */
+function gta6_ajax_get_news() {
+    check_ajax_referer('gta6-ultimate-nonce', 'nonce');
+
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+
+    if (empty($id)) {
+        wp_send_json_error(__('ID inválido.', 'gta6-ultimate'));
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'gta6_news';
+
+    $news = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id = %d", $id));
+    if (!$news) {
+        wp_send_json_error(__('Notícia não encontrada.', 'gta6-ultimate'));
+    }
+
+    wp_send_json_success(array(
+        'title'     => $news->title,
+        'content'   => wp_kses_post($news->content),
+        'category'  => $news->category,
+        'date'      => mysql2date(get_option('date_format'), $news->date),
+        'image_url' => esc_url($news->image_url),
     ));
 }
 
