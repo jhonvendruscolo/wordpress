@@ -243,6 +243,14 @@ body.gta6-page {
     text-shadow: 0 0 10px var(--pink-neon);
 }
 
+.gta6-character-role {
+    color: var(--blue-neon);
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 5px var(--blue-neon);
+}
+
 .gta6-character-description {
     color: var(--text-light);
     font-size: 1rem;

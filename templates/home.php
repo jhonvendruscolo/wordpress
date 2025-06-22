@@ -68,7 +68,7 @@ include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/header.php';
             <?php endforeach; ?>
         </div>
         <div class="gta6-buttons-center" style="text-align: center; margin-top: 20px;">
-            <a href="<?php echo esc_url(home_url('gta/personagens')); ?>" class="gta6-button"><?php echo gta6_t('view_all_characters', 'Ver Mais Personagens'); ?></a>
+            <a href="<?php echo esc_url(home_url('gta/personagens')); ?>" class="gta6-button"><?php echo gta6_t('view_all_characters', 'Ver Todos os Personagens'); ?></a>
         </div>
     </div>
 
