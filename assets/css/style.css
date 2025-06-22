@@ -243,6 +243,14 @@ body.gta6-page {
     text-shadow: 0 0 10px var(--pink-neon);
 }
 
+.gta6-character-role {
+    color: var(--blue-neon);
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 5px var(--blue-neon);
+}
+
 .gta6-character-description {
     color: var(--text-light);
     font-size: 1rem;
@@ -808,4 +816,64 @@ body.gta6-page {
     background-color: var(--blue-neon);
     color: var(--purple-dark);
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Modal de notícias */
+.gta6-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.gta6-modal-content {
+    background-color: var(--purple-dark);
+    margin: 5% auto;
+    padding: 2rem;
+    border: 1px solid var(--pink-neon);
+    width: 90%;
+    max-width: 800px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 0, 204, 0.5);
+    position: relative;
+}
+
+.gta6-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: var(--text-light);
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.gta6-modal-title {
+    color: var(--pink-neon);
+    text-align: center;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px var(--pink-neon);
+}
+
+.gta6-modal-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: var(--blue-neon);
+}
+
+.gta6-modal-image {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+.gta6-modal-content-text {
+    color: var(--text-light);
+    line-height: 1.6;
 }

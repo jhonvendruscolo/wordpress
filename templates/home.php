@@ -68,7 +68,7 @@ include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/header.php';
             <?php endforeach; ?>
         </div>
         <div class="gta6-buttons-center" style="text-align: center; margin-top: 20px;">
-            <a href="<?php echo esc_url(home_url('gta/personagens')); ?>" class="gta6-button"><?php echo gta6_t('view_all_characters', 'Ver Mais Personagens'); ?></a>
+            <a href="<?php echo esc_url(home_url('gta/personagens')); ?>" class="gta6-button"><?php echo gta6_t('view_all_characters', 'Ver Todos os Personagens'); ?></a>
         </div>
     </div>
 
@@ -91,13 +91,23 @@ include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/header.php';
             </div>
             <div class="gta6-card-footer">
                 <span class="gta6-news-category"><?php echo esc_html($item->category); ?></span>
-                <a href="<?php echo esc_url(home_url('gta/noticias')); ?>" class="gta6-link"><?php echo gta6_t('read_more', 'Leia mais'); ?></a>
+                <a href="#" class="gta6-link gta6-news-read-more" data-id="<?php echo esc_attr($item->id); ?>"><?php echo gta6_t('read_more', 'Leia mais'); ?></a>
             </div>
         </div>
         <?php endforeach; ?>
     </div>
     <div class="gta6-buttons-center" style="text-align: center; margin-top: 20px;">
         <a href="<?php echo esc_url(home_url('gta/noticias')); ?>" class="gta6-button"><?php echo gta6_t('view_all_news', 'Ver Todas as Notícias'); ?></a>
+    </div>
+
+    <!-- Modal para exibir notícia completa -->
+    <div class="gta6-modal" id="gta6-news-modal">
+        <div class="gta6-modal-content">
+            <span class="gta6-modal-close">&times;</span>
+            <div class="gta6-modal-body">
+                <!-- Conteúdo carregado via JavaScript -->
+            </div>
+        </div>
     </div>
 
     <!-- Newsletter -->
@@ -155,6 +165,48 @@ jQuery(document).ready(function($) {
                 submitButton.prop('disabled', false).text('<?php echo esc_js(gta6_t('subscribe', 'Inscrever-se')); ?>');
             }
         });
+    });
+
+    // Leia mais de notícias
+    $('.gta6-news-read-more').on('click', function(e) {
+        e.preventDefault();
+
+        const newsId = $(this).data('id');
+
+        $.ajax({
+            url: gta6_vars.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'gta6_get_news',
+                id: newsId,
+                nonce: gta6_vars.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#gta6-news-modal .gta6-modal-body').html(`
+                        <h2 class="gta6-modal-title">${response.data.title}</h2>
+                        <div class="gta6-modal-meta">
+                            <span class="gta6-modal-date">${response.data.date}</span>
+                            <span class="gta6-modal-category">${response.data.category}</span>
+                        </div>
+                        <img src="${response.data.image_url}" alt="${response.data.title}" class="gta6-modal-image">
+                        <div class="gta6-modal-content-text">${response.data.content}</div>
+                    `);
+
+                    $('#gta6-news-modal').fadeIn();
+                }
+            }
+        });
+    });
+
+    $('.gta6-modal-close').on('click', function() {
+        $('#gta6-news-modal').fadeOut();
+    });
+
+    $(window).on('click', function(e) {
+        if ($(e.target).is('.gta6-modal')) {
+            $('.gta6-modal').fadeOut();
+        }
     });
 });
 </script>

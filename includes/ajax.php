@@ -148,7 +148,7 @@ function gta6_ajax_activate_background() {
     $wpdb->update(
         $table_name,
         array('is_active' => 0),
-        array('1' => 1),
+        array('is_active' => 1),
         array('%d'),
         array('%d')
     );
