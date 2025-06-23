@@ -145,13 +145,7 @@ function gta6_ajax_activate_background() {
     }
     
     // Desativar todos os planos de fundo
-    $wpdb->update(
-        $table_name,
-        array('is_active' => 0),
-        array('is_active' => 1),
-        array('%d'),
-        array('%d')
-    );
+    $wpdb->query("UPDATE {$table_name} SET is_active = 0");
     
     // Ativar o plano de fundo selecionado
     $result = $wpdb->update(
