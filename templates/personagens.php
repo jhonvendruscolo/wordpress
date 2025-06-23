@@ -22,7 +22,7 @@ $characters = $wpdb->get_results("SELECT * FROM $table_name ORDER BY display_ord
         <div class="gta6-section-header">
             <h2><?php echo gta6_t('characters', 'Personagens'); ?></h2>
         </div>
-        
+
         <?php if (empty($characters)) : ?>
             <p class="gta6-no-content"><?php echo gta6_t('no_characters_found', 'Nenhum personagem encontrado.'); ?></p>
         <?php else : ?>
@@ -47,3 +47,4 @@ $characters = $wpdb->get_results("SELECT * FROM $table_name ORDER BY display_ord
 <?php
 // Incluir rodapé
 include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/footer.php';
+?>
