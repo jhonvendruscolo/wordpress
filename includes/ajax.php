@@ -144,8 +144,14 @@ function gta6_ajax_activate_background() {
         wp_send_json_error(__('Plano de fundo não encontrado.', 'gta6-ultimate'));
     }
     
-    // Desativar todos os planos de fundo
-    $wpdb->query("UPDATE {$table_name} SET is_active = 0");
+    // Desativar planos de fundo atualmente ativos
+    $wpdb->update(
+        $table_name,
+        array('is_active' => 0),
+        array('is_active' => 1),
+        array('%d'),
+        array('%d')
+    );
     
     // Ativar o plano de fundo selecionado
     $result = $wpdb->update(
