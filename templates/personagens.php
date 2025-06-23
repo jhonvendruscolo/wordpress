@@ -43,3 +43,4 @@ $characters = $wpdb->get_results("SELECT * FROM $table_name ORDER BY display_ord
 <?php
 // Incluir rodapé
 include_once GTA6_ULTIMATE_PLUGIN_DIR . 'templates/footer.php';
+?>
